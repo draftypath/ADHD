@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADHD Coin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js"></script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem;
+    }
+
+    .corner-img {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 50vw;
+      max-width: 600px;
+      opacity: 0.8;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .gallery {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding: 3rem;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #000;
+      object-fit: cover;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(29, 185, 84, 0.5);
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .gallery img:nth-child(2) { animation-delay: 0.1s; }
+    .gallery img:nth-child(3) { animation-delay: 0.2s; }
+    .gallery img:nth-child(4) { animation-delay: 0.3s; }
+    .gallery img:nth-child(5) { animation-delay: 0.4s; }
+    .gallery img:nth-child(6) { animation-delay: 0.5s; }
+    .gallery img:nth-child(7) { animation-delay: 0.6s; }
+    .gallery img:nth-child(8) { animation-delay: 0.7s; }
+    .gallery img:nth-child(9) { animation-delay: 0.8s; }
+
+    .disclaimer-box {
+      background: #282828;
+      color: #e6e6e6;
+      padding: 2rem;
+      margin: 3rem auto;
+      border-radius: 10px;
+      max-width: 900px;
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .generator-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .upload-box {
+      flex: 1;
+      min-width: 250px;
+      border: 2px dashed #888;
+      padding: 2rem;
+      border-radius: 10px;
+      background: #1a1a1a;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .upload-box.dragover {
+      border-color: #1DB954;
+      background: rgba(29, 185, 84, 0.1);
+      box-shadow: 0 0 10px #1DB954;
+    }
+
+    .preview-box {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    canvas {
+      width: 100%;
+      border: 1px solid #444;
+      border-radius: 10px;
+    }
+
+    .controls {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .download-button {
+      margin-top: 2rem;
+      padding: 0.75rem 2rem;
+      border-radius: 25px;
+      background: #1DB954;
+      color: #000;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .download-button:hover {
+      background: #17a146;
+      transform: scale(1.05);
+    }
+
+    .confessions-container {
+      max-width: 900px;
+      margin: 5rem auto;
+      text-align: center;
+    }
+
+    .confession-popup, .confessions-list-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .confession-content, .confessions-list-content {
+      background: rgba(20, 20, 25, 0.95);
+      padding: 2rem;
+      border-radius: 15px;
+      max-width: 600px;
+      max-height: 80vh;
+      width: 100%;
+      overflow-y: auto;
+      border: 2px solid #1DB954;
+      backdrop-filter: blur(8px);
+    }
+
+    .confession-content h2, .confessions-list-content h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .confession-content p {
+      font-size: 1rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    .confession-content textarea {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #1DB954;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+      max-height: 150px;
+    }
+
+    .confession-content textarea:focus {
+      outline: none;
+      border-color: #fff;
+      box-shadow: 0 0 12px rgba(29, 185, 84, 0.5);
+    }
+
+    #char-count {
+      color: #ccc;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-align: right;
+    }
+
+    .confession-content button {
+      background: #1DB954;
+      color: #000;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      margin: 0.5rem;
+    }
+
+    .confession-content button:hover {
+      background: #17a146;
+      transform: scale(1.05);
+    }
+
+    .confessions-list-content .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border: 2px solid #1DB954;
+      border-radius: 6px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .confessions-list-content .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .voting-controls {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .custom-select {
+      position: relative;
+      width: fit-content;
+    }
+
+    .select-button {
+      padding: 0.4rem 1.5rem 0.4rem 0.8rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+      border-radius: 5px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 130px;
+    }
+
+    .select-button::after {
+      content: '\f078';
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.8rem;
+      font-size: 0.7rem;
+    }
+
+    .options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: rgba(20, 20, 25, 0.95);
+      border: 1px solid #1DB954;
+      border-radius: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+      color: #fff;
+      z-index: 25;
+    }
+
+    .options div {
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .options div:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-select.open .options {
+      display: block;
+    }
+
+    .options::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .options::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+
+    .options::-webkit-scrollbar-thumb {
+      background: #1DB954;
+      border-radius: 4px;
+    }
+
+    .confessions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .confession-item {
+      background: rgba(30, 30, 35, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 1rem 0.8rem;
+      margin: 0.8rem auto;
+      border-radius: 12px;
+      transition: all 0.3s;
+      cursor: pointer;
+      max-width: 500px;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .confession-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 3px 8px rgba(29, 185, 84, 0.2);
+    }
+
+    .confession-item.rank-1 {
+      border: 4px solid #1DB954;
+      box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+    }
+
+    .confession-item.rank-2 {
+      border: 4px solid #17a146;
+      box-shadow: 0 0 10px rgba(23, 161, 70, 0.4);
+    }
+
+    .confession-item.rank-3 {
+      border: 4px solid #137f38;
+      box-shadow: 0 0 10px rgba(19, 127, 56, 0.4);
+    }
+
+    .confession-item::before {
+      content: attr(data-rank);
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .confession-item p {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.8rem;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .confession-votes {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .confession-votes button {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.95rem;
+      border-radius: 5px;
+      border: 1px solid #1DB954;
+      transition: all 0.3s;
+    }
+
+    .confession-votes button:hover {
+      background: #1DB954;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .confession-votes button:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: not-allowed;
+    }
+
+    .confession-votes span {
+      color: #ccc;
+      font-size: 0.95rem;
+    }
+
+    .share-btn {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+    }
+
+    .share-btn:hover {
+      background: #1DB954;
+      transform: scale(1.05);
+    }
+
+    .share-btn img {
+      width: 12px;
+      height: 12px;
+    }
+
+    .confession-meta {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+
+    .notification-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      border: 1px solid #1DB954;
+    }
+
+    .notification-visible {
+      opacity: 1;
+    }
+
+    button:focus, a:focus, input:focus, textarea:focus {
+      outline: 2px solid #1DB954;
+      outline-offset: 2px;
+    }
+
+    .x-signin-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      margin: 0.3rem;
+    }
+
+    .x-signin-btn:hover {
+      background: #1DB954;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .user-profile {
+      color: #fff;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      display: none;
+      margin: 0.3rem;
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .generator-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .upload-box, .preview-box, .confession-content textarea {
+        width: 100%;
+        max-width: 400px;
+      }
+      .corner-img {
+        width: 40vw;
+        max-width: 300px;
+      }
+      header > div {
+        flex-direction: column;
+        align-items: center;
+      }
+      header input, header button, header a {
+        width: 100%;
+        max-width: 300px;
+        margin: 0.5rem 0;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      .gallery img {
+        max-height: 300px;
+        object-fit: contain;
+      }
+      .confession-item {
+        max-width: 100%;
+        padding: 0.8rem 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="notification-popup" class="notification-popup"></div>
+
+  <div id="confession-popup" class="confession-popup">
+    <div class="confession-content">
+      <h2>Share Your ADHD Story</h2>
+      <p>Drop your wildest ADHD moment (max 500 characters)</p>
+      <form id="confession-form">
+        <textarea id="confession-text" placeholder="Your ADHD confession..." maxlength="500" required></textarea>
+        <div id="char-count">0/500 characters</div>
+        <button type="submit">Submit Confession</button>
+      </form>
+      <button id="view-confessions-btn">View Confessions</button>
+    </div>
+  </div>
+
+  <div id="confessions-list-popup" class="confessions-list-popup">
+    <div class="confessions-list-content">
+      <button class="back-btn" id="back-to-form-btn">Back</button>
+      <h2>ADHD Confessions</h2>
+      <div class="voting-controls">
+        <div class="custom-select" id="sort-confessions">
+          <div class="select-button">Most Votes</div>
+          <div class="options">
+            <div data-value="votes-desc">Most Votes</div>
+            <div data-value="votes-asc">Least Votes</div>
+            <div data-value="date-desc">Newest</div>
+            <div data-value="date-asc">Oldest</div>
+          </div>
+        </div>
+      </div>
+      <div id="confessions-list" class="confessions-list"></div>
+    </div>
+  </div>
+
+  <header>
+    <h1 style="font-size: 3.5rem; text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);">$ADHD</h1>
+    <p class="tagline" style="margin: 0.5rem 0 1.5rem; font-size: 1.3rem; font-weight: 500;">Brain’s a blur, bags secure. $ADHD go brrr!</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
+      <input id="adhdAddress" type="text" value="7HBcvLbvyeprwDkPQfUB9ZE6xkfWQ8G5JrCZg8NMBMt1" readonly
+        style="padding: 0.6rem 1rem; font-size: 0.9rem; border-radius: 25px; border: none; background: #eee; width: 100%; max-width: 480px;" />
+      <button onclick="copyADHD()" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; border: none; transition: transform 0.2s, background 0.2s;">Copy</button>
+      <a href="https://dexscreener.com/solana/h1g9mq8xwavgrdsdfef3k6nkfqmfcvaj71qarxqyb81u" target="_blank" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; text-decoration: none; transition: transform 0.2s, background 0.2s;">Trade on Dexscreener ↗</a>
+    </div>
+
+    <div class="social-buttons" style="margin-bottom: 0.5rem;">
+      <a href="https://t.me/+pfeY3Kx7eAExZWRl" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">Telegram</a>
+      <a href="https://x.com/i/communities/1927572051310661920" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">X / Community</a>
+      <a href="#generator" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">ADHD Generator</a>
+      <a href="#confessions" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">Confessions</a>
+      <a href="https://chadd.org/" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">ADHD Resources</a>
+      <button id="x-signin-btn" class="x-signin-btn">
+        Login with <img src="xlogo.png" alt="X" style="width: 16px; height: 16px; margin-left: 5px;">
+      </button>
+      <span id="user-profile" class="user-profile"></span>
+      <button id="logout-btn" class="x-signin-btn" style="display: none;">Logout</button>
+    </div>
+
+    <footer style="margin-top: 0.5rem; font-size: 0.8rem; color: #ccc;">
+      ⚡ ADHD Coin 2025 — Probably not financial advice.
+    </footer>
+  </header>
+
+  <div class="gallery">
+    <img src="img1.png" alt="ADHD Meme 1" loading="lazy" />
+    <img src="img2.png" alt="ADHD Meme 2" loading="lazy" />
+    <img src="img3.png" alt="ADHD Meme 3" loading="lazy" />
+    <img src="img4.png" alt="ADHD Meme 4" loading="lazy" />
+    <img src="img5.png" alt="ADHD Meme 5" loading="lazy" />
+    <img src="img6.png" alt="ADHD Meme 6" loading="lazy" />
+    <img src="img7.png" alt="ADHD Meme 7" loading="lazy" />
+    <img src="img8.png" alt="ADHD Meme 8" loading="lazy" />
+    <img src="img9.png" alt="ADHD Meme 9" loading="lazy" />
+  </div>
+
+  <section id="generator" style="margin-top: 5rem; max-width: 900px; margin-inline: auto; text-align: center;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">ADHD GENERATOR</h2>
+    <p>1 - Upload image. 2 - Adds “ADHD”. 3 - Download and share!</p>
+
+    <div class="generator-container">
+      <label for="upload" class="upload-box">
+        <input id="upload" type="file" accept="image/*" style="display: none;" aria-label="Upload image for meme" />
+        <p>Click to upload or drag and drop<br /><small>SVG, PNG, JPG or GIF (max 5MB)</small></p>
+      </label>
+
+      <div class="preview-box">
+        <canvas id="memeCanvas"></canvas>
+        <div class="controls">
+          <label><input type="checkbox" id="confirm" checked> I confirm I have rights to use this image and agree to the parody use terms.</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="download-button" onclick="downloadMeme()">Download ADHD Meme</button>
+
+    <div class="disclaimer-box">
+      <strong>MEME GENERATOR DISCLAIMER:</strong><br /><br />
+      ADHDcoin.com is an independent entertainment website that provides a free, user-directed parody meme generator. This tool is intended strictly for humorous and satirical purposes.<br /><br />
+      • adhdcoin.com does not host, save, or display any images uploaded or generated by users.<br />
+      • Users are solely responsible for the images they upload and the memes they create using this tool.<br />
+      • By using the generator, you agree that you have the legal right to use any images you upload and that adhdcoin.com is not liable for misuse of the tool.<br />
+      • adhdcoin.com is not affiliated with, endorsed by, or directly connected to the ADHD meme coin, its developers, or its token holders. This website exists purely as a fan-made parody and creative resource.<br />
+      • Any logos, overlays, or references to “ADHD” are used for satirical and community-based entertainment only.
+    </div>
+  </section>
+
+  <section id="confessions" class="confessions-container">
+    <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">ADHD Confessions</h2>
+    <p>Share your ADHD story and vote on others!</p>
+    <button onclick="document.getElementById('confession-popup').style.display='flex'" style="padding: 0.75rem 1.5rem; border-radius: 25px; background: #1DB954; color: #000; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s;">Share Your Story</button>
+  </section>
+
+  <img src="adhdimage1.png" alt="Decorative ADHD-themed illustration" class="corner-img" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAuth, signInWithPopup, TwitterAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, runTransaction, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+
+    // Firebase Configuration (officialdoit project)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAo6_0DUw8OMm4aiNxUtxO7Q660GowCr4o",
+      authDomain: "officialdoit.firebaseapp.com",
+      projectId: "officialdoit",
+      storageBucket: "officialdoit.firebasestorage.app",
+      messagingSenderId: "1034242279014",
+      appId: "1:1034242279014:web:30efccc9b08acb3a98cfa7",
+      measurementId: "G-NVSJD6HC3F"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    let unsubscribeConfessions = null;
+
+    // Notification
+    function showNotification(message) {
+      const notification = document.getElementById('notification-popup');
+      notification.textContent = message;
+      notification.classList.add('notification-visible');
+      setTimeout(() => {
+        notification.classList.remove('notification-visible');
+      }, 3000);
+    }
+
+    // Twitter Authentication
+    const twitterProvider = new TwitterAuthProvider();
+    document.getElementById('x-signin-btn').addEventListener('click', async () => {
+      try {
+        const result = await signInWithPopup(auth, twitterProvider);
+        const user = result.user;
+        localStorage.setItem('authUserId', user.uid);
+        showNotification(`Signed in as @${user.providerData[0].displayName}`);
+      } catch (error) {
+        console.error("X Sign-in error:", error.code, error.message);
+        showNotification(`Failed to sign in with X: ${error.message}`);
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      showNotification('Logged out successfully!');
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('x-signin-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'flex';
+        document.getElementById('user-profile').style.display = 'inline-block';
+        document.getElementById('user-profile').textContent = `@${user.providerData[0].displayName}`;
+        localStorage.setItem('authUserId', user.uid);
+      } else {
+        document.getElementById('x-signin-btn').style.display = 'flex';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('user-profile').style.display = 'none';
+        document.getElementById('user-profile').textContent = '';
+        localStorage.removeItem('authUserId');
+      }
+    });
+
+    // Generate User ID for non-authenticated users
+    function getUserId() {
+      let userId = localStorage.getItem('userId');
+      if (!userId) {
+        userId = 'user-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
+      }
+      return userId;
+    }
+    window.getUserId = getUserId;
+
+    // Copy ADHD Address
+    function copyADHD() {
+      const input = document.getElementById('adhdAddress');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(input.value);
+      showNotification('Copied $ADHD contract address!');
+    }
+    window.copyADHD = copyADHD; // Expose to global scope
+
+    // Meme Generator
+    const upload = document.getElementById('upload');
+    const uploadBox = document.querySelector('.upload-box');
+    const canvas = document.getElementById('memeCanvas');
+    const ctx = canvas.getContext('2d');
+    let image = null;
+
+    uploadBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBox.classList.add('dragover');
+    });
+    uploadBox.addEventListener('dragleave', () => {
+      uploadBox.classList.remove('dragover');
+    });
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+        image = new Image();
+        image.onload = () => {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          drawMeme();
+        };
+        image.src = URL.createObjectURL(file);
+        upload.value = '';
+      } else {
+        showNotification(file.type.startsWith('image/') ? 'File size exceeds 5MB limit.' : 'Please upload a valid image file (SVG, PNG, JPG, GIF).');
+      }
+    });
+
+    upload.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showNotification('Please upload a valid image file (SVG, PNG, JPG, GIF).');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('File size exceeds 5MB limit.');
+        return;
+      }
+      image = new Image();
+      image.onload = () => {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        drawMeme();
+      };
+      image.src = URL.createObjectURL(file);
+    });
+
+    function drawMeme() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!document.getElementById('confirm').checked) {
+        ctx.font = 'bold 24px Poppins';
+        ctx.fillStyle = '#888';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Please confirm image rights', canvas.width / 2, canvas.height / 2);
+        return;
+      }
+      if (!image) return;
+
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      ctx.font = `${Math.floor(canvas.width / 6)}px Impact, 'Arial Black', sans-serif`;
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 5;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText('ADHD', canvas.width / 2, canvas.height / 2);
+      ctx.fillText('ADHD', canvas.width / 2, canvas.height / 2);
+    }
+
+    document.getElementById('confirm').addEventListener('change', drawMeme);
+
+    function downloadMeme() {
+      if (!image || !document.getElementById('confirm').checked) {
+        showNotification('Please upload an image and confirm image rights.');
+        return;
+      }
+      const link = document.createElement('a');
+      link.download = 'adhd-meme.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    window.downloadMeme = downloadMeme; // Expose to global scope
+
+    // Confessions
+    function startConfessionsListener() {
+      if (unsubscribeConfessions) unsubscribeConfessions();
+      const customSelect = document.getElementById('sort-confessions');
+      let sortField = 'votes';
+      let sortDirection = 'desc';
+
+      function updateQuery(sortValue = customSelect.dataset.value || 'votes-desc') {
+        console.log("Updating confessions query with sort:", sortValue);
+        if (sortValue === 'votes-desc') {
+          sortField = 'votes';
+          sortDirection = 'desc';
+        } else if (sortValue === 'votes-asc') {
+          sortField = 'votes';
+          sortDirection = 'asc';
+        } else if (sortValue === 'date-desc') {
+          sortField = 'createdAt';
+          sortDirection = 'desc';
+        } else {
+          sortField = 'createdAt';
+          sortDirection = 'asc';
+        }
+
+        const confessionsList = document.getElementById('confessions-list');
+        confessionsList.innerHTML = '<p>Loading confessions...</p>';
+
+        const q = query(collection(db, "confessions"), orderBy(sortField, sortDirection));
+        unsubscribeConfessions = onSnapshot(q, (snapshot) => {
+          console.log("Received snapshot with", snapshot.size, "confessions");
+          confessionsList.innerHTML = '';
+          const confessions = [];
+          snapshot.forEach((doc) => {
+            confessions.push({ id: doc.id, ...doc.data() });
+          });
+
+          const userId = localStorage.getItem('authUserId') || getUserId();
+          if (sortValue === 'votes-desc') {
+            const topThree = confessions.slice(0, 3);
+            const others = confessions.slice(3);
+
+            topThree.forEach((c, index) => {
+              renderConfession(c, index + 1, confessionsList, userId);
+            });
+            others.forEach((c) => {
+              renderConfession(c, null, confessionsList, userId);
+            });
+          } else {
+            confessions.forEach((c) => {
+              renderConfession(c, null, confessionsList, userId);
+            });
+          }
+        }, (error) => {
+          console.error('Error loading confessions:', error.code, error.message);
+          showNotification('Failed to load confessions.');
+        });
+      }
+
+      window.updateConfessionsSort = updateQuery;
+      updateQuery();
+    }
+
+    function stopConfessionsListener() {
+      if (unsubscribeConfessions) {
+        unsubscribeConfessions();
+        unsubscribeConfessions = null;
+        console.log("Confessions listener stopped");
+      }
+    }
+
+    function renderConfession(confession, rank, container, userId) {
+      const hasVoted = confession.voters && confession.voters.includes(userId);
+      const div = document.createElement('div');
+      div.className = `confession-item${rank ? ` rank-${rank}` : ''}`;
+      if (rank) div.setAttribute('data-rank', `#${rank}`);
+      div.innerHTML = `
+        <p>${confession.text}</p>
+        <div class="confession-votes">
+          <button onclick="window.upvote('${confession.id}', event)" ${hasVoted ? 'disabled' : ''}>${hasVoted ? 'Voted' : 'Upvote'} (${confession.votes || 0})</button>
+        </div>
+        <p class="confession-meta">Posted: ${confession.createdAt ? new Date(confession.createdAt.toDate()).toLocaleString() : 'Just now'}</p>
+        <button class="share-btn" onclick="window.shareOnX('${confession.text}', event)">
+          <img src="xlogo.png" alt="X">
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    async function upvote(confessionId, event) {
+      event.stopPropagation();
+      const userId = localStorage.getItem('authUserId') || getUserId();
+      console.log("Upvoting with userId:", userId);
+      const confessionRef = doc(db, "confessions", confessionId);
+      try {
+        await runTransaction(db, async (transaction) => {
+          const docSnap = await transaction.get(confessionRef);
+          if (!docSnap.exists()) {
+            throw new Error("Confession does not exist!");
+          }
+          const data = docSnap.data();
+          console.log("Current confession data:", data);
+          const voters = data.voters || [];
+          if (voters.includes(userId)) {
+            throw new Error("You already voted for this confession!");
+          }
+          transaction.update(confessionRef, {
+            votes: (data.votes || 0) + 1,
+            voters: [...voters, userId]
+          });
+        });
+        console.log("Vote added successfully for user:", userId);
+      } catch (error) {
+        console.error("Error voting:", error.code, error.message);
+        showNotification(error.message || "Failed to upvote. Please try again.");
+      }
+    }
+    window.upvote = upvote;
+
+    function shareOnX(text, event) {
+      event.stopPropagation();
+      const truncatedText = text.length > 50 ? text.substring(0, 47) + '...' : text;
+      const tweetText = `${truncatedText}\n\nShare your ADHD story at https://adhdcoin.com #ADHDcoin`;
+      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+      window.open(tweetUrl, '_blank');
+    }
+    window.shareOnX = shareOnX;
+
+    // Confession Form Submission
+    document.getElementById('confession-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log("Submit confession triggered");
+      const text = document.getElementById('confession-text').value.trim();
+      const userId = localStorage.getItem('authUserId') || getUserId();
+      if (text.length === 0) {
+        showNotification('Please enter a confession.');
+        console.log("Submission failed: Empty text");
+        return;
+      }
+      if (text.length > 500) {
+        showNotification('Confession exceeds 500 character limit!');
+        console.log("Submission failed: Text too long");
+        return;
+      }
+      try {
+        console.log("Attempting to submit confession:", text);
+        await addDoc(collection(db, "confessions"), {
+          text: text,
+          votes: 0,
+          voters: [],
+          submitter: userId,
+          createdAt: serverTimestamp()
+        });
+        console.log("Confession submitted successfully");
+        document.getElementById('confession-text').value = '';
+        document.getElementById('char-count').textContent = '0/500 characters';
+        showNotification('Confession submitted successfully!');
+        document.getElementById('confession-popup').style.display = 'none';
+      } catch (error) {
+        console.error('Error submitting confession:', error.code, error.message);
+        showNotification(`Error submitting confession: ${error.message}`);
+      }
+    });
+
+    // Character Counter
+    document.getElementById('confession-text').addEventListener('input', (e) => {
+      document.getElementById('char-count').textContent = `${e.target.value.length}/500 characters`;
+    });
+
+    // Popup Handling
+    const confessionPopup = document.getElementById('confession-popup');
+    const confessionsListPopup = document.getElementById('confessions-list-popup');
+
+    confessionPopup.addEventListener('click', (e) => {
+      if (e.target === confessionPopup) {
+        confessionPopup.style.display = 'none';
+      }
+    });
+
+    confessionsListPopup.addEventListener('click', (e) => {
+      if (e.target === confessionsListPopup) {
+        confessionsListPopup.style.display = 'none';
+        stopConfessionsListener();
+      }
+    });
+
+    document.getElementById('view-confessions-btn').addEventListener('click', () => {
+      confessionsListPopup.style.display = 'flex';
+      confessionPopup.style.display = 'none';
+      startConfessionsListener();
+    });
+
+    document.getElementById('back-to-form-btn').addEventListener('click', () => {
+      confessionsListPopup.style.display = 'none';
+      confessionPopup.style.display = 'flex';
+      stopConfessionsListener();
+    });
+
+    // Sorting Dropdown
+    const customSelect = document.querySelector('.custom-select');
+    const selectButton = customSelect.querySelector('.select-button');
+    const options = customSelect.querySelector('.options');
+
+    selectButton.addEventListener('click', () => {
+      customSelect.classList.toggle('open');
+    });
+
+    options.querySelectorAll('div').forEach(option => {
+      option.addEventListener('click', () => {
+        selectButton.textContent = option.textContent;
+        customSelect.dataset.value = option.dataset.value;
+        customSelect.classList.remove('open');
+        window.updateConfessionsSort(customSelect.dataset.value);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!customSelect.contains(e.target)) {
+        customSelect.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
