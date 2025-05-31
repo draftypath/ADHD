@@ -565,10 +565,25 @@
   <section id="confessions" class="confessions-container">
     <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">$ADHD Stories</h2>
     <p>Share your $ADHD story and vote on others!</p>
-    <button onclick="document.getElementById('confession-popup').style.display='flex'"
-  style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: 25px; background: #1DB954; color: #000; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s;">
+<button onclick="document.getElementById('confession-popup').style.display='flex'"
+  style="
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 25px;
+    background: #1DB954;
+    color: #000;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  "
+  onmouseover="this.style.background='#17a146'; this.style.transform='scale(1.05)'"
+  onmouseout="this.style.background='#1DB954'; this.style.transform='scale(1)'"
+>
   Share Your Story
 </button>
+
 
   </section>
 
