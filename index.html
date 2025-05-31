@@ -14,20 +14,13 @@
   <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js"></script>
   <style>
     html {
-      scroll-behavior: smooth;
+      scroll-behavior: smooth; /* Enable smooth scrolling */
       background: linear-gradient(135deg, #111 0%, #1a1a1a 100%); /* Primary gradient */
       background-color: #111; /* Fallback for overscroll */
       overscroll-behavior: none; /* Prevent default overscroll effects */
-      height: 100%; /* Full viewport height */
       margin: 0;
       padding: 0;
       -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-      position: fixed; /* Lock HTML to viewport */
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      overflow: auto; /* Allow scrolling within fixed container */
       -webkit-tap-highlight-color: transparent; /* Prevent tap highlight issues */
     }
 
@@ -40,7 +33,6 @@
       color: #fff;
       text-align: center;
       min-height: 100vh; /* Ensure body covers full viewport height */
-      height: 100%; /* Full viewport height */
       overflow-x: hidden; /* Prevent horizontal scroll */
       box-sizing: border-box;
     }
@@ -1051,6 +1043,21 @@
         notification.classList.remove('notification-visible');
       }, 3000);
     }
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
 
     // Authentication Handling
     document.getElementById('logout-btn').addEventListener('click', async () => {
