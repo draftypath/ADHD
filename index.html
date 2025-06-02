@@ -14,32 +14,42 @@
   <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js"></script>
   <style>
     html {
-      scroll-behavior: smooth; /* Enable smooth scrolling */
-      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%); /* Primary gradient */
-      background-color: #111; /* Fallback for overscroll */
-      overscroll-behavior: none; /* Prevent default overscroll effects */
+      scroll-behavior: smooth;
+      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+      background-color: #111;
+      overscroll-behavior: none;
       margin: 0;
       padding: 0;
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-      -webkit-tap-highlight-color: transparent; /* Prevent tap highlight issues */
+      -webkit-overflow-scrolling: touch;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       margin: 0;
       padding: 1.5rem;
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%); /* Match html gradient */
-      background-color: #111; /* Fallback for overscroll */
+      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+      background-color: #111;
       color: #fff;
       text-align: center;
-      min-height: 100vh; /* Ensure body covers full viewport height */
-      overflow-x: hidden; /* Prevent horizontal scroll */
+      min-height: 100vh;
+      overflow-x: hidden;
       box-sizing: border-box;
     }
 
-    /* Ensure no unstyled areas are exposed */
     * {
       box-sizing: border-box;
+    }
+
+    #adhdAddress {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      border-radius: 25px;
+      border: 1px solid #1DB954;
+      background: #101010;
+      color: #bebebe;
+      width: 100%;
+      max-width: 480px;
     }
 
     .corner-img {
@@ -54,10 +64,10 @@
     }
 
     .header-img {
-      width: 150px; /* Adjust size as needed */
+      width: 150px;
       height: auto;
       object-fit: contain;
-      margin-left: 0.5rem; /* Space between title and image */
+      margin-left: 0.5rem;
       margin-right: -8.0rem;
     }
 
@@ -118,11 +128,11 @@
 
     .confession-content, .confessions-list-content {
       background: rgba(20, 20, 25, 0.95);
-      padding: 2rem;
+      padding: 2.5rem;
       border-radius: 15px;
-      max-width: 600px;
-      max-height: 80vh;
-      width: 100%;
+      max-width: 720px;
+      max-height: 85vh;
+      width: 90%;
       overflow-y: auto;
       border: 2px solid #1DB954;
       backdrop-filter: blur(8px);
@@ -184,7 +194,6 @@
       transform: scale(1.05);
     }
 
-    /* Lime Green Glow for View Confessions Button */
     #view-confessions-btn {
       animation: limeGlow 2s infinite;
       transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
@@ -478,7 +487,6 @@
       margin: 0.3rem;
     }
 
-    /* Glow Animation for ADHD Confessions Buttons */
     @keyframes glow {
       0% {
         box-shadow: 0 0 5px rgba(0, 255, 100, 0.4), 0 0 10px rgba(0, 255, 100, 0.3);
@@ -492,14 +500,30 @@
     }
 
     .social-buttons a[href="#confessions"] {
-      background: #1DB954; /* Green background */
+      background: #1DB954;
       animation: glow 2s infinite;
       transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
     }
 
     .social-buttons a[href="#confessions"]:hover {
-      background: #17a146; /* Darker green on hover */
+      background: #17a146;
       transform: scale(1.05);
+    }
+
+    .subtagline {
+      font-size: 1.1rem;
+      color: #ccc;
+      font-weight: 400;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0.5rem auto 1.5rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .subtagline .highlight {
+      color: #1DB954;
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {
@@ -524,8 +548,13 @@
         gap: 0.3rem;
       }
       .header-img {
-        width: 60px; /* Smaller size for mobile */
+        width: 60px;
         margin-left: 0;
+      }
+      .subtagline {
+        font-size: 1rem;
+        margin: 0.3rem auto 1rem;
+        padding: 0 1rem;
       }
     }
 
@@ -540,6 +569,9 @@
       .confession-item {
         max-width: 100%;
         padding: 0.8rem 0.6rem;
+      }
+      .subtagline {
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -581,14 +613,13 @@
 
   <header>
     <div class="header-container" style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
-      <h1 style="font-size: 4.5rem; text-shadow: 0 0 8px rgba(255, 255, 255, 0.7); margin: 0;">$ADHD</h1>
+      <h1 style="font-size: 4.5rem; text-shadow: 0 0 8px rgba(255, 255, 255, 0.7); margin: 0; margin-left: 40px;">$ADHD</h1>
       <img src="CTO.png" alt="ADHD CTO" class="header-img" />
     </div>
-    <p class="tagline" style="margin: 0.5rem 0 1.5rem; font-size: 1.3rem; font-weight: 500;">ALL DEGENS HAVE DREAMS</p>
+    <p class="subtagline">The blockchain better take an Adderall because it just got hit with a serious case of <span class="highlight">$ADHD.</span> Made by ADHD degens, for ADHD degens!</p>
 
     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
-      <input id="adhdAddress" type="text" value="7HBcvLbvyeprwDkPQfUB9ZE6xkfWQ8G5JrCZg8NMBMt1" readonly
-        style="padding: 0.6rem 1rem; font-size: 0.9rem; border-radius: 25px; border: none; background: #eee; width: 100%; max-width: 480px;" />
+      <input id="adhdAddress" type="text" value="7HBcvLbvyeprwDkPQfUB9ZE6xkfWQ8G5JrCZg8NMBMt1" readonly />
       <button onclick="copyADHD()" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; border: none; transition: transform 0.2s, background 0.2s;">Copy</button>
       <a href="https://dexscreener.com/solana/h1g9mq8xwavgrdsdfef3k6nkfqmfcvaj71qarxqyb81u" target="_blank" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; text-decoration: none; transition: transform 0.2s, background 0.2s;">Trade on Dexscreener ↗</a>
     </div>
@@ -603,7 +634,7 @@
       <button id="logout-btn" class="x-signin-btn" style="display: none;">Logout</button>
     </div>
 
-    <footer style="margin-top: 2.5rem; font-size: 0.8rem; color: #ccc;">
+    <footer style="margin-top: 1.8rem; font-size: 0.8rem; color: #ccc;">
       $ADHD 2025 - Probably not financial advice, wait what was I doing here?
     </footer>
   </header>
@@ -628,7 +659,7 @@
         padding: 0.75rem 1.5rem;
         font-size: 1rem;
         border-radius: 25px;
-        background: #1DB954; /* Green background */
+        background: #1DB954;
         color: #000;
         font-weight: 600;
         font-family: 'Poppins', sans-serif;
@@ -644,10 +675,8 @@
     </button>
   </section>
 
-  <!-- ADHD MEME GENERATOR COMPONENT -->
   <section id="adhd-meme-generator" class="adhd-meme-generator">
     <style>
-      /* === Scoped styles for the generator only === */
       #adhd-meme-generator {
         --green: #1DB954;
         --dark: #111;
@@ -658,7 +687,6 @@
         padding: 2rem 1rem 3rem;
         max-width: 980px;
         margin: 5rem auto;
-        /* Removed border-radius and box-shadow for no popup effect */
       }
 
       #adhd-meme-generator h2 {
@@ -682,7 +710,6 @@
         justify-content: center;
       }
 
-      /* === Left panel (controls) === */
       .mg-controls {
         flex: 1 1 260px;
         min-width: 260px;
@@ -763,27 +790,26 @@
         margin-top: 2rem;
       }
       .mg-btn {
-        padding: 0.75rem 1.5rem; /* Matched to Share Your Confession */
+        padding: 0.75rem 1.5rem;
         border-radius: 25px;
         border: none;
         background: var(--green);
         color: #000;
         font-family: 'Poppins', sans-serif;
-        font-size: 1rem; /* Matched to Share Your Confession */
-        font-weight: 600; /* Matched to Share Your Confession */
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
         transition: transform .2s, background .2s;
       }
       .mg-btn:hover {
         background: #17a146;
-        transform: scale(1.05); /* Adjusted to match Share Your Confession */
+        transform: scale(1.05);
       }
       .mg-btn[disabled] {
         filter: grayscale(1) brightness(.6);
         cursor: not-allowed;
       }
 
-      /* === Right panel (preview) === */
       .mg-preview {
         flex: 1 1 320px;
         min-width: 320px;
@@ -797,7 +823,6 @@
         border-radius: 10px;
       }
 
-      /* Mobile tweaks */
       @media (max-width: 540px) {
         #adhd-meme-generator h2 { font-size: 2rem; }
         .mg-preview canvas { max-height: 420px; }
@@ -809,9 +834,7 @@
     <p class="tagline">Upload → tweak $ADHD watermark → download/share</p>
 
     <div class="mg-flex">
-      <!-- CONTROLS PANEL -->
       <div class="mg-controls">
-        <!-- File upload -->
         <fieldset>
           <legend>1 · Select Image (≤5 MB)</legend>
           <label class="mg-drop" id="mg-drop">
@@ -820,7 +843,6 @@
           </label>
         </fieldset>
 
-        <!-- Watermark colour -->
         <fieldset>
           <legend>2 · Watermark Colour</legend>
           <div class="mg-row">
@@ -829,20 +851,17 @@
           </div>
         </fieldset>
 
-        <!-- Position sliders -->
         <fieldset>
           <legend>3 · Position (%)</legend>
           <div class="mg-slider"><input type="range" id="mg-pos-x" min="0" max="100" value="50"/><span id="mg-pos-x-val">50</span></div>
           <div class="mg-slider"><input type="range" id="mg-pos-y" min="0" max="100" value="50"/><span id="mg-pos-y-val">50</span></div>
         </fieldset>
 
-        <!-- Size slider -->
         <fieldset>
           <legend>4 · Size (%)</legend>
           <div class="mg-slider"><input type="range" id="mg-size" min="10" max="200" value="100"/><span id="mg-size-val">100</span></div>
         </fieldset>
 
-        <!-- Format + rights -->
         <fieldset>
           <legend>5 · Download Settings</legend>
           <div class="mg-row">
@@ -858,19 +877,16 @@
         </fieldset>
       </div>
 
-      <!-- PREVIEW PANEL -->
       <div class="mg-preview">
         <canvas id="mg-canvas" width="800" height="600"></canvas>
       </div>
     </div>
 
-    <!-- Action buttons -->
     <div class="mg-actions">
       <button class="mg-btn" id="mg-download">Download</button>
       <button class="mg-btn" id="mg-share">Share on X</button>
     </div>
 
-    <!-- Notification toast -->
     <div id="mg-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:.6rem 1.2rem;border-radius:8px;color:#fff;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .35s;"></div>
 
     <script>
@@ -881,7 +897,6 @@
         const ctx       = canvas.getContext('2d');
         let img = null;
 
-        // helpers
         const W = () => canvas.width;
         const H = () => canvas.height;
         const toast = (msg) => {
@@ -890,7 +905,6 @@
           setTimeout(() => t.style.opacity = 0, 2400);
         };
 
-        // draw function
         function draw() {
           ctx.clearRect(0, 0, W(), H());
           if (!img) return;
@@ -901,7 +915,6 @@
           const posY = +document.getElementById('mg-pos-y').value / 100;
           const scaleP = +document.getElementById('mg-size').value / 100;
 
-          // compute font size relative to canvas width
           const fontSize = Math.floor(W() / 6 * scaleP);
           ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`;
           ctx.textAlign = 'center';
@@ -917,14 +930,12 @@
           ctx.fillText('$ADHD', x, y);
         }
 
-        // handle file selection
         function handleFile(file) {
           if (!file.type.startsWith('image/')) return toast('Unsupported file type');
           if (file.size > 5*1024*1024)  return toast('File > 5 MB');
           const image = new Image();
           image.onload = () => {
             img = image;
-            // resize canvas to image
             canvas.width = image.width;
             canvas.height = image.height;
             draw();
@@ -933,7 +944,6 @@
         }
 
         fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-        // Drag+drop
         ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
           e.preventDefault();
           dropZone.classList.add('dragover');
@@ -946,7 +956,6 @@
           handleFile(e.dataTransfer.files[0]);
         });
 
-        // listeners for controls
         ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size'].forEach(id => {
           const el = id.startsWith('wm') ? document.querySelectorAll('input[name="wm-colour"]') : [document.getElementById(id)];
           el.forEach(inpt => inpt.addEventListener('input', () => {
@@ -957,7 +966,6 @@
           }));
         });
 
-        // download handler
         document.getElementById('mg-download').addEventListener('click', () => {
           if (!img) return toast('Upload an image first');
           if (!document.getElementById('mg-confirm').checked) return toast('Confirm image rights');
@@ -968,20 +976,15 @@
           link.click();
         });
 
-        // Updated mg-share click handler
         document.getElementById('mg-share').addEventListener('click', () => {
           if (!img) return toast('Create a meme first');
           if (!document.getElementById('mg-confirm').checked)
             return toast('Confirm image rights');
 
-          // TODO: swap in a real CDN/Imgur link if you host the meme
           const memeLink = '[add download link]';
-
           const tweet =
             `Got distracted & made my own ADHD meme! Check it out: ${memeLink} $ADHD` +
             `\n\nhttps://adhdegens.fun/`;
-
-          // no separate &url= — everything is inside text
           const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
           window.open(intent, '_blank');
         });
@@ -991,7 +994,6 @@
 
   <img src="adhdimage1.png" alt="Decorative ADHD-themed illustration" class="corner-img" />
 
-  <!-- Added Meme Generator Disclaimer -->
   <section style="background: #1a1a1a; color: #ccc; padding: 2rem 1.5rem; margin-top: 4rem; font-size: 0.95rem; line-height: 1.6; max-width: 980px; margin-left: auto; margin-right: auto; border-top: 1px solid #333; border-radius: 10px;">
     <h3 style="color: #fff; margin-bottom: 1rem;">$ADHD DISCLAIMER</h3>
     <p><strong>adhdegens.fun</strong> is an independent, CTO created, entertainment site offering a free parody meme generator, and a place to share ADHD confessions. It is intended strictly for humorous and satirical use.</p>
@@ -1015,7 +1017,6 @@
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, runTransaction, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
 
-    // Firebase Configuration (officialdoit project)
     const firebaseConfig = {
       apiKey: "AIzaSyAo6_0DUw8OMm4aiNxUtxO7Q660GowCr4o",
       authDomain: "officialdoit.firebaseapp.com",
@@ -1026,7 +1027,6 @@
       measurementId: "G-NVSJD6HC3F"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const analytics = getAnalytics(app);
@@ -1034,7 +1034,6 @@
 
     let unsubscribeConfessions = null;
 
-    // Notification
     function showNotification(message) {
       const notification = document.getElementById('notification-popup');
       notification.textContent = message;
@@ -1044,22 +1043,20 @@
       }, 3000);
     }
 
-    // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
         if (targetElement) {
-          targetElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
           });
         }
       });
     });
 
-    // Authentication Handling
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await signOut(auth);
       showNotification('Logged out successfully!');
@@ -1079,7 +1076,6 @@
       }
     });
 
-    // Generate User ID for non-authenticated users
     function getUserId() {
       let userId = localStorage.getItem('userId');
       if (!userId) {
@@ -1090,11 +1086,10 @@
     }
     window.getUserId = getUserId;
 
-    // Copy ADHD Address
     function copyADHD() {
       const input = document.getElementById('adhdAddress');
       input.select();
-      input.setSelectionRange(0, 99999); // For mobile compatibility
+      input.setSelectionRange(0, 99999);
       navigator.clipboard.writeText(input.value).then(() => {
         showNotification('Copied $ADHD contract address!');
       }).catch(err => {
@@ -1104,10 +1099,9 @@
     }
     window.copyADHD = copyADHD;
 
-    // Updated shareOnX helper function
     function shareOnX(text, event) {
       event.stopPropagation();
-      const truncated = text.length > 50 ? text.slice(0, 47) + '…' : text;
+      const truncated = text.length > 200 ? text.slice(0, 197) + '…' : text;
       const tweet =
         `${truncated}\n\nShare your ADHD confession at https://adhdegens.fun $ADHD`;
       window.open(
@@ -1117,7 +1111,6 @@
     }
     window.shareOnX = shareOnX;
 
-    // Confessions
     function startConfessionsListener() {
       if (unsubscribeConfessions) unsubscribeConfessions();
       const customSelect = document.getElementById('sort-confessions');
@@ -1234,7 +1227,6 @@
     }
     window.upvote = upvote;
 
-    // Confession Form Submission
     document.getElementById('confession-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       console.log("Submit confession triggered");
@@ -1270,12 +1262,10 @@
       }
     });
 
-    // Character Counter
     document.getElementById('confession-text').addEventListener('input', (e) => {
       document.getElementById('char-count').textContent = `${e.target.value.length}/500 characters`;
     });
 
-    // Popup Handling
     const confessionPopup = document.getElementById('confession-popup');
     const confessionsListPopup = document.getElementById('confessions-list-popup');
 
@@ -1304,7 +1294,6 @@
       stopConfessionsListener();
     });
 
-    // Sorting Dropdown
     const customSelect = document.querySelector('.custom-select');
     const selectButton = customSelect.querySelector('.select-button');
     const options = customSelect.querySelector('.options');
