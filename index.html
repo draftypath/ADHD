@@ -2,53 +2,1392 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>$ADHD - Coming Soon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ADHD</title>
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js"></script>
   <style>
-    body {
+    html {
+      scroll-behavior: smooth;
+      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+      background-color: #111;
+      overscroll-behavior: none;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #111, #1a1a1a);
-      color: #fff;
+      -webkit-overflow-scrolling: touch;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 1.5rem;
       font-family: 'Poppins', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    #adhdAddress {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      border-radius: 25px;
+      border: 1px solid #1DB954;
+      background: #101010;
+      color: #bebebe;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .corner-img {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 50vw;
+      max-width: 600px;
+      opacity: 0.8;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .header-img {
+      width: 150px;
+      height: auto;
+      object-fit: contain;
+      margin-left: 0.5rem;
+      margin-right: -8.0rem;
+    }
+
+    .gallery {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding: 3rem;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #000;
+      object-fit: cover;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(29, 185, 84, 0.5);
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .gallery img:nth-child(2) { animation-delay: 0.1s; }
+    .gallery img:nth-child(3) { animation-delay: 0.2s; }
+    .gallery img:nth-child(4) { animation-delay: 0.3s; }
+    .gallery img:nth-child(5) { animation-delay: 0.4s; }
+    .gallery img:nth-child(6) { animation-delay: 0.5s; }
+    .gallery img:nth-child(7) { animation-delay: 0.6s; }
+    .gallery img:nth-child(8) { animation-delay: 0.7s; }
+    .gallery img:nth-child(9) { animation-delay: 0.8s; }
+
+    .confessions-container {
+      max-width: 900px;
+      margin: 5rem auto;
       text-align: center;
     }
 
-    h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
-      color: #1DB954;
-      text-shadow: 0 0 8px rgba(29, 185, 84, 0.4);
+    .confession-popup, .confessions-list-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 20;
+      justify-content: center;
+      align-items: center;
     }
 
-    p {
-      font-size: 1.2rem;
-      max-width: 600px;
-      margin: 0 1rem;
-      line-height: 1.6;
+    .confession-content, .confessions-list-content {
+      background: rgba(20, 20, 25, 0.95);
+      padding: 2.5rem;
+      border-radius: 15px;
+      max-width: 720px;
+      max-height: 85vh;
+      width: 90%;
+      overflow-y: auto;
+      border: 2px solid #1DB954;
+      backdrop-filter: blur(8px);
+    }
+
+    .confession-content h2, .confessions-list-content h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .confession-content p {
+      font-size: 1rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    .confession-content textarea {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #1DB954;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+      max-height: 150px;
+    }
+
+    .confession-content textarea:focus {
+      outline: none;
+      border-color: #fff;
+      box-shadow: 0 0 12px rgba(29, 185, 84, 0.5);
+    }
+
+    #char-count {
+      color: #ccc;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-align: right;
+    }
+
+    .confession-content button {
+      background: #1DB954;
+      color: #000;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      margin: 0.5rem;
+    }
+
+    .confession-content button:hover {
+      background: #17a146;
+      transform: scale(1.05);
+    }
+
+    #view-confessions-btn {
+      animation: limeGlow 2s infinite;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    #view-confessions-btn:hover {
+      background: #17a146;
+      transform: scale(1.05);
+    }
+
+    @keyframes limeGlow {
+      0% { box-shadow: 0 0 5px rgba(50, 205, 50, 0.4), 0 0 10px rgba(50, 205, 50, 0.3); }
+      50% { box-shadow: 0 0 15px rgba(50, 205, 50, 0.7), 0 0 25px rgba(50, 205, 50, 0.5); }
+      100% { box-shadow: 0 0 5px rgba(50, 205, 50, 0.4), 0 0 10px rgba(50, 205, 50, 0.3); }
+    }
+
+    .confessions-list-content .back-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border: 2px solid #1DB954;
+      border-radius: 6px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .confessions-list-content .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    .voting-controls {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .custom-select {
+      position: relative;
+      width: fit-content;
+    }
+
+    .select-button {
+      padding: 0.4rem 1.5rem 0.4rem 0.8rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+      border-radius: 5px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 130px;
+    }
+
+    .select-button::after {
+      content: '\f078';
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-left: 0.8rem;
+      font-size: 0.7rem;
+    }
+
+    .options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: rgba(20, 20, 25, 0.95);
+      border: 1px solid #1DB954;
+      border-radius: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+      color: #fff;
+      z-index: 25;
+    }
+
+    .options div {
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .options div:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-select.open .options {
+      display: block;
+    }
+
+    .options::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .options::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+
+    .options::-webkit-scrollbar-thumb {
+      background: #1DB954;
+      border-radius: 4px;
+    }
+
+    .confessions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .confession-item {
+      background: rgba(30, 30, 35, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 1rem 0.8rem;
+      margin: 0.8rem auto;
+      border-radius: 12px;
+      transition: all 0.3s;
+      cursor: pointer;
+      max-width: 500px;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .confession-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 3px 8px rgba(29, 185, 84, 0.2);
+    }
+
+    .confession-item.rank-1 {
+      border: 4px solid #1DB954;
+      box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+    }
+
+    .confession-item.rank-2 {
+      border: 4px solid #17a146;
+      box-shadow: 0 0 10px rgba(23, 161, 70, 0.4);
+    }
+
+    .confession-item.rank-3 {
+      border: 4px solid #137f38;
+      box-shadow: 0 0 10px rgba(19, 127, 56, 0.4);
+    }
+
+    .confession-item::before {
+      content: attr(data-rank);
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .confession-item p {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.8rem;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .confession-votes {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .confession-votes button {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.95rem;
+      border-radius: 5px;
+      border: 1px solid #1DB954;
+      transition: all 0.3s;
+    }
+
+    .confession-votes button:hover {
+      background: #1DB954;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .confession-votes button:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: not-allowed;
+    }
+
+    .confession-votes span {
+      color: #ccc;
+      font-size: 0.95rem;
+    }
+
+    .share-btn {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+    }
+
+    .share-btn:hover {
+      background: #1DB954;
+      transform: scale(1.05);
+    }
+
+    .share-btn img {
+      width: 12px;
+      height: 12px;
+    }
+
+    .confession-meta {
+      font-size: 0.8rem;
       color: #ccc;
     }
 
-    .tagline {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #777;
+    .notification-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      border: 1px solid #1DB954;
+    }
+
+    .notification-visible {
+      opacity: 1;
+    }
+
+    .airdrop-popup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      max-width: 300px;
+      background: rgba(29, 185, 84, 0.95);
+      color: #000;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: 'Poppins', sans-serif;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      animation: fadeSlideIn 0.8s ease forwards;
+    }
+
+    .airdrop-popup button {
+      background: none;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .airdrop-popup {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        font-size: 0.85rem;
+      }
+    }
+
+    button:focus, a:focus, input:focus, textarea:focus {
+      outline: 2px solid #1DB954;
+      outline-offset: 2px;
+    }
+
+    .x-signin-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #1DB954;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      margin: 0.3rem;
+    }
+
+    .x-signin-btn:hover {
+      background: #1DB954;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .user-profile {
+      color: #fff;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      display: none;
+      margin: 0.3rem;
+    }
+
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 5px rgba(0, 255, 100, 0.4), 0 0 10px rgba(0, 255, 100, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 15px rgba(0, 255, 100, 0.8), 0 0 30px rgba(0, 255, 100, 0.6);
+      }
+      100% {
+        box-shadow: 0 0 5px rgba(0, 255, 100, 0.4), 0 0 10px rgba(0, 255, 100, 0.3);
+      }
+    }
+
+    .social-buttons a[href="#confessions"] {
+      background: #1DB954;
+      animation: glow 2s infinite;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .social-buttons a[href="#confessions"]:hover {
+      background: #17a146;
+      transform: scale(1.05);
+    }
+
+    .subtagline {
+      font-size: 1.1rem;
+      color: #ccc;
+      font-weight: 400;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0.5rem auto 1.5rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+
+    .subtagline .highlight {
+      color: #1DB954;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .corner-img {
+        width: 40vw;
+        max-width: 300px;
+      }
+      header > div {
+        flex-direction: column;
+        align-items: center;
+      }
+      header input, header button, header a {
+        width: 100%;
+        max-width: 300px;
+        margin: 0.5rem 0;
+      }
+      .header-container {
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+      .header-img {
+        width: 60px;
+        margin-left: 0;
+      }
+      .subtagline {
+        font-size: 1rem;
+        margin: 0.3rem auto 1rem;
+        padding: 0 1rem;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      .gallery img {
+        max-height: 300px;
+        object-fit: contain;
+      }
+      .confession-item {
+        max-width: 100%;
+        padding: 0.8rem 0.6rem;
+      }
+      .subtagline {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>$ADHD Website Coming Soon</h1>
-  <p>
-    The blockchain better take an Adderall...  
-    <br><br>
-    Our official site is cooking & we are (actually focused) - memes, confessions, a degen haven, and more.
-  </p>
-  <p class="tagline">© 2025 $ADHD • Developed by @whoiswhoman</p>
+  <div id="notification-popup" class="notification-popup"></div>
+
+  <div id="adhd-airdrop-popup" class="airdrop-popup">
+    <p><strong>Submit an ADHD confession</strong> for a chance to be airdropped <strong>250,000 $ADHD!</strong></p>
+    <button id="close-airdrop-popup">✖</button>
+  </div>
+
+  <div id="confession-popup" class="confession-popup">
+    <div class="confession-content">
+      <h2>Share Your $ADHD Confessions & Stories</h2>
+      <p style="font-size: 0.95rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
+  <strong style="color: #1DB954; font-size: 1.05rem;">🏆 WIN 250,000 $ADHD</strong><br><br>
+  Submit your ADHD confession or story, <strong>share it to X</strong>, and in 48 hours the <strong>top voted post</strong> gets 
+  <strong style="color: #1DB954;">250,000 $ADHD</strong> airdropped.<br><br>
+  Help spread awareness and connect through <strong>relatable confessions and stories</strong>!
+</p>
+      <form id="confession-form">
+        <textarea id="confession-text" placeholder="Your $ADHD confession..." maxlength="500" required></textarea>
+        <div id="char-count">0/500 characters</div>
+        <button type="submit">Submit Confession</button>
+      </form>
+      <button id="view-confessions-btn">View Confessions</button>
+    </div>
+  </div>
+
+  <div id="confessions-list-popup" class="confessions-list-popup">
+    <div class="confessions-list-content">
+      <button class="back-btn" id="back-to-form-btn">Back</button>
+      <h2>$ADHD Confessions</h2>
+      <div class="voting-controls">
+        <div class="custom-select" id="sort-confessions">
+          <div class="select-button">Most Votes</div>
+          <div class="options">
+            <div data-value="votes-desc">Most Votes</div>
+            <div data-value="votes-asc">Least Votes</div>
+            <div data-value="date-desc">Newest</div>
+            <div data-value="date-asc">Oldest</div>
+          </div>
+        </div>
+      </div>
+      <div id="confessions-list" class="confessions-list"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-container" style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+      <h1 style="font-size: 4.5rem; text-shadow: 0 0 8px rgba(255, 255, 255, 0.7); margin: 0; margin-left: 10px;">$ADHD</h1>
+      <img src="CTO.png" alt="ADHD CTO" class="header-img" />
+    </div>
+    <p class="subtagline">The blockchain better take an Adderall because it just got hit with a serious case of <span class="highlight">$ADHD.</span> Made by ADHD degens, for ADHD degens!</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; margin-bottom: 1.5rem;">
+      <input id="adhdAddress" type="text" value="7HBcvLbvyeprwDkPQfUB9ZE6xkfWQ8G5JrCZg8NMBMt1" readonly />
+      <button onclick="copyADHD()" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; border: none; transition: transform 0.2s, background 0.2s;">Copy</button>
+      <a href="https://dexscreener.com/solana/h1g9mq8xwavgrdsdfef3k6nkfqmfcvaj71qarxqyb81u" target="_blank" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 25px; background: #1DB954; color: #fff; text-decoration: none; transition: transform 0.2s, background 0.2s;">Trade on Dexscreener ↗</a>
+    </div>
+
+    <div class="social-buttons" style="margin-bottom: 0.5rem;">
+      <a href="https://t.me/+pfeY3Kx7eAExZWRl" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">Telegram</a>
+      <a href="https://x.com/i/communities/1927572051310661920" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">X / Community</a>
+      <a href="#adhd-meme-generator" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">ADHD-ifier</a>
+      <a href="#confessions" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s, box-shadow 0.2s; animation: glow 2s infinite;" onmouseover="this.style.background='#17a146'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#1DB954'; this.style.transform='scale(1)'">ADHD Confessions</a>
+      <a href="https://chadd.org/" target="_blank" style="display: inline-block; margin: 0.3rem; padding: 0.75rem 1.5rem; background: #1DB954; border-radius: 25px; color: #000; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s, background 0.2s;">ADHD Resources</a>
+      <span id="user-profile" class="user-profile"></span>
+      <button id="logout-btn" class="x-signin-btn" style="display: none;">Logout</button>
+    </div>
+
+    <footer style="margin-top: 1.8rem; font-size: 0.8rem; color: #ccc;">
+      $ADHD 2025 - Probably not financial advice, wait what was I doing here?
+    </footer>
+  </header>
+
+  <div class="gallery">
+    <img src="img11.png" alt="ADHD Meme 1" loading="lazy" />
+    <img src="img2.png" alt="ADHD Meme 2" loading="lazy" />
+    <img src="img3.png" alt="ADHD Meme 3" loading="lazy" />
+    <img src="img4.png" alt="ADHD Meme 4" loading="lazy" />
+    <img src="img5.png" alt="ADHD Meme 5" loading="lazy" />
+    <img src="img6.png" alt="ADHD Meme 6" loading="lazy" />
+    <img src="img8.png" alt="ADHD Meme 8" loading="lazy" />
+    <img src="img9.png" alt="ADHD Meme 9" loading="lazy" />
+    <img src="img10.png" alt="ADHD Meme 10" loading="lazy" />
+  </div>
+
+  <section id="confessions" class="confessions-container">
+    <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">$ADHD Confessions</h2>
+    <p>Share your $ADHD confession and vote on others!</p>
+    <button onclick="document.getElementById('confession-popup').style.display='flex'"
+      style="
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 25px;
+        background: #1DB954;
+        color: #000;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+        animation: glow 2s infinite;
+      "
+      onmouseover="this.style.background='#17a146'; this.style.transform='scale(1.05)'"
+      onmouseout="this.style.background='#1DB954'; this.style.transform='scale(1)'"
+    >
+      Share Your Confession
+    </button>
+  </section>
+
+  <section id="adhd-meme-generator" class="adhd-meme-generator">
+    <style>
+      #adhd-meme-generator {
+        --green: #1DB954;
+        --dark: #111;
+        --light: #fafafa;
+        font-family: "Poppins", sans-serif;
+        color: var(--light);
+        background: linear-gradient(135deg, var(--dark) 0%, #1a1a1a 100%);
+        padding: 2rem 1rem 3rem;
+        max-width: 980px;
+        margin: 5rem auto;
+      }
+
+      #adhd-meme-generator h2 {
+        font-size: 2.6rem;
+        text-align: center;
+        margin-bottom: .2rem;
+        text-shadow: 0 0 6px rgba(255, 255, 255, .4);
+      }
+      #adhd-meme-generator p.tagline {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        opacity: .9;
+      }
+
+      .mg-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: center;
+      }
+
+      .mg-controls {
+        flex: 1 1 260px;
+        min-width: 260px;
+        background: rgba(255, 255, 255, .06);
+        border: 1px solid var(--green);
+        border-radius: 12px;
+        padding: 1.2rem 1rem 1.6rem;
+        backdrop-filter: blur(4px);
+      }
+      .mg-controls fieldset {
+        border: none;
+        margin: 0 0 1.1rem;
+        padding: 0;
+      }
+      .mg-controls legend {
+        font-size: .95rem;
+        font-weight: 600;
+        margin-bottom: .5rem;
+      }
+      .mg-controls input[type="file"] {
+        display: none;
+      }
+      .mg-drop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1.2rem .8rem;
+        border: 2px dashed #888;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .25s;
+      }
+      .mg-drop.dragover { border-color: var(--green); }
+
+      .mg-slider {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+      .mg-slider input {
+        flex: 1;
+      }
+      .mg-slider span {
+        font-size: .8rem;
+        width: 36px;
+        text-align: right;
+      }
+
+      .mg-row {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        margin-bottom: .8rem;
+        flex-wrap: wrap;
+      }
+      .mg-row label {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .85rem;
+        cursor: pointer;
+      }
+      .mg-row select {
+        padding: .35rem .6rem;
+        border-radius: 6px;
+        border: 1px solid var(--green);
+        background: rgba(255, 255, 255, .05);
+        color: var(--light);
+        font-family: inherit;
+      }
+
+      .mg-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .7rem;
+        justify-content: center;
+        margin-top: 2rem;
+      }
+      .mg-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        border: none;
+        background: var(--green);
+        color: #000;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .2s, background .2s;
+      }
+      .mg-btn:hover {
+        background: #17a146;
+        transform: scale(1.05);
+      }
+      .mg-btn[disabled] {
+        filter: grayscale(1) brightness(.6);
+        cursor: not-allowed;
+      }
+
+      .mg-preview {
+        flex: 1 1 320px;
+        min-width: 320px;
+        position: relative;
+        text-align: center;
+      }
+      .mg-preview canvas {
+        width: 100%;
+        max-height: 560px;
+        border: 1px solid #444;
+        border-radius: 10px;
+      }
+
+      @media (max-width: 540px) {
+        #adhd-meme-generator h2 { font-size: 2rem; }
+        .mg-preview canvas { max-height: 420px; }
+        .mg-actions { margin-top: 1.5rem; }
+      }
+    </style>
+
+    <h2>$ADHD-ifier</h2>
+    <p class="tagline">Upload → tweak $ADHD watermark → download/share</p>
+
+    <div class="mg-flex">
+      <div class="mg-controls">
+        <fieldset>
+          <legend>1 · Select Image (≤5 MB)</legend>
+          <label class="mg-drop" id="mg-drop">
+            <input type="file" id="mg-file" accept="image/*"/>
+            <span>Click or drag an image here</span>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>2 · Watermark Colour</legend>
+          <div class="mg-row">
+            <label><input type="radio" name="wm-colour" value="white" checked/> White</label>
+            <label><input type="radio" name="wm-colour" value="black"/> Black</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3 · Position (%)</legend>
+          <div class="mg-slider"><input type="range" id="mg-pos-x" min="0" max="100" value="50"/><span id="mg-pos-x-val">50</span></div>
+          <div class="mg-slider"><input type="range" id="mg-pos-y" min="0" max="100" value="50"/><span id="mg-pos-y-val">50</span></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>4 · Size (%)</legend>
+          <div class="mg-slider"><input type="range" id="mg-size" min="10" max="200" value="100"/><span id="mg-size-val">100</span></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>5 · Download Settings</legend>
+          <div class="mg-row">
+            <label for="mg-format">Format:</label>
+            <select id="mg-format">
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+            </select>
+          </div>
+          <div class="mg-row">
+            <label><input type="checkbox" id="mg-confirm"/> I own the rights & accept parody use</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="mg-preview">
+        <canvas id="mg-canvas" width="800" height="600"></canvas>
+      </div>
+    </div>
+
+    <div class="mg-actions">
+      <button class="mg-btn" id="mg-download">Download</button>
+      <button class="mg-btn" id="mg-share">Share on X</button>
+    </div>
+
+    <div id="mg-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:.6rem 1.2rem;border-radius:8px;color:#fff;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .35s;"></div>
+  </section>
+
+  <img src="adhdimage1.png" alt="Decorative ADHD-themed illustration" class="corner-img" />
+
+  <section style="background: #1a1a1a; color: #ccc; padding: 2rem 1.5rem; margin-top: 4rem; font-size: 0.95rem; line-height: 1.6; max-width: 980px; margin-left: auto; margin-right: auto; border-top: 1px solid #333; border-radius: 10px;">
+    <h3 style="color: #fff; margin-bottom: 1rem;">$ADHD DISCLAIMER</h3>
+    <p><strong>adhdegens.fun</strong> is an independent, CTO created, entertainment site offering a free parody meme generator, and a place to share ADHD confessions. It is intended strictly for humorous and satirical use.</p>
+
+    <ul style="list-style: disc; padding-left: 1.5rem; margin-top: 1rem;">
+      <li>We do not store, host, or display uploaded or generated images.</li>
+      <li>Users are solely responsible for any content they upload or create.</li>
+      <li>By using the tool, you confirm you have rights to the content you upload.</li>
+      <li>This site is not affiliated with the $ADHD token, its team, or any official entity.</li>
+      <li>All references to “ADHD” are purely satirical and for community entertainment.</li>
+    </ul>
+
+    <p style="margin-top: 1.5rem;">This site does not promote or manage the $ADHD token. Any opinions expressed are non-professional and for entertainment only. DYOR before engaging with any crypto project.</p>
+
+    <p style="margin-top: 1rem; font-size: 0.85rem; color: #777;">© 2025 $ADHD. All rights reserved. Website developed by @whoiswhoman</p>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, runTransaction, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAo6_0DUw8OMm4aiNxUtxO7Q660GowCr4o",
+      authDomain: "officialdoit.firebaseapp.com",
+      projectId: "officialdoit",
+      storageBucket: "officialdoit.firebasestorage.app",
+      messagingSenderId: "1034242279014",
+      appId: "1:1034242279014:web:30efccc9b08acb3a98cfa7",
+      measurementId: "G-NVSJD6HC3F"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    let unsubscribeConfessions = null;
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification-popup');
+      notification.textContent = message;
+      notification.classList.add('notification-visible');
+      setTimeout(() => {
+        notification.classList.remove('notification-visible');
+      }, 3000);
+    }
+
+    window.addEventListener('load', () => {
+      const popup = document.getElementById('adhd-airdrop-popup');
+      const closeBtn = document.getElementById('close-airdrop-popup');
+
+      // Auto-close after 15 seconds
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 10000);
+
+      // Manual close
+      closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+      });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      showNotification('Logged out successfully!');
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('logout-btn').style.display = 'flex';
+        document.getElementById('user-profile').style.display = 'inline-block';
+        document.getElementById('user-profile').textContent = `@${user.providerData[0].displayName}`;
+        localStorage.setItem('authUserId', user.uid);
+      } else {
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('user-profile').style.display = 'none';
+        document.getElementById('user-profile').textContent = '';
+        localStorage.removeItem('authUserId');
+      }
+    });
+
+    function getUserId() {
+      let userId = localStorage.getItem('userId');
+      if (!userId) {
+        userId = 'user-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
+      }
+      return userId;
+    }
+    window.getUserId = getUserId;
+
+    function copyADHD() {
+      const input = document.getElementById('adhdAddress');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(input.value).then(() => {
+        showNotification('Copied $ADHD contract address!');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        showNotification('Failed to copy address.');
+      });
+    }
+    window.copyADHD = copyADHD;
+
+    function shareOnX(text, event) {
+  event.stopPropagation();
+  const truncated = text.length > 200 ? text.slice(0, 197) + '…' : text;
+  const tweet = `${truncated}\n\nShare your ADHD stories too at https://adhdegens.fun\n\n@degen_adhd $ADHD`;
+  window.open(
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
+    '_blank'
+  );
+}
+
+    window.shareOnX = shareOnX;
+
+    function startConfessionsListener() {
+      if (unsubscribeConfessions) unsubscribeConfessions();
+      const customSelect = document.getElementById('sort-confessions');
+      let sortField = 'votes';
+      let sortDirection = 'desc';
+
+      function updateQuery(sortValue = customSelect.dataset.value || 'votes-desc') {
+        console.log("Updating confessions query with sort:", sortValue);
+        if (sortValue === 'votes-desc') {
+          sortField = 'votes';
+          sortDirection = 'desc';
+        } else if (sortValue === 'votes-asc') {
+          sortField = 'votes';
+          sortDirection = 'asc';
+        } else if (sortValue === 'date-desc') {
+          sortField = 'createdAt';
+          sortDirection = 'desc';
+        } else {
+          sortField = 'createdAt';
+          sortDirection = 'asc';
+        }
+
+        const confessionsList = document.getElementById('confessions-list');
+        confessionsList.innerHTML = '<p>Loading confessions...</p>';
+
+        const q = query(collection(db, "confessions"), orderBy(sortField, sortDirection));
+        unsubscribeConfessions = onSnapshot(q, (snapshot) => {
+          console.log("Received snapshot with", snapshot.size, "confessions");
+          confessionsList.innerHTML = '';
+          const confessions = [];
+          snapshot.forEach((doc) => {
+            confessions.push({ id: doc.id, ...doc.data() });
+          });
+
+          const userId = localStorage.getItem('authUserId') || getUserId();
+          if (sortValue === 'votes-desc') {
+            const topThree = confessions.slice(0, 3);
+            const others = confessions.slice(3);
+
+            topThree.forEach((c, index) => {
+              renderConfession(c, index + 1, confessionsList, userId);
+            });
+            others.forEach((c) => {
+              renderConfession(c, null, confessionsList, userId);
+            });
+          } else {
+            confessions.forEach((c) => {
+              renderConfession(c, null, confessionsList, userId);
+            });
+          }
+        }, (error) => {
+          console.error('Error loading confessions:', error.code, error.message);
+          showNotification('Failed to load confessions.');
+        });
+      }
+
+      window.updateConfessionsSort = updateQuery;
+      updateQuery();
+    }
+
+    function stopConfessionsListener() {
+      if (unsubscribeConfessions) {
+        unsubscribeConfessions();
+        unsubscribeConfessions = null;
+        console.log("Confessions listener stopped");
+      }
+    }
+
+    function renderConfession(confession, rank, container, userId) {
+      const hasVoted = confession.voters && confession.voters.includes(userId);
+      const div = document.createElement('div');
+      div.className = `confession-item${rank ? ` rank-${rank}` : ''}`;
+      if (rank) div.setAttribute('data-rank', `#${rank}`);
+      div.innerHTML = `
+        <p>${confession.text}</p>
+        <div class="confession-votes">
+          <button onclick="window.upvote('${confession.id}', event)" ${hasVoted ? 'disabled' : ''}>${hasVoted ? 'Voted' : 'Upvote'} (${confession.votes || 0})</button>
+        </div>
+        <p class="confession-meta">Posted: ${confession.createdAt ? new Date(confession.createdAt.toDate()).toLocaleString() : 'Just now'}</p>
+        <button class="share-btn" onclick="window.shareOnX('${confession.text}', event)">
+          <img src="xlogo.png" alt="X">
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    async function upvote(confessionId, event) {
+      event.stopPropagation();
+      const userId = localStorage.getItem('authUserId') || getUserId();
+      console.log("Upvoting with userId:", userId);
+      const confessionRef = doc(db, "confessions", confessionId);
+      try {
+        await runTransaction(db, async (transaction) => {
+          const docSnap = await transaction.get(confessionRef);
+          if (!docSnap.exists()) {
+            throw new Error("Confession does not exist!");
+          }
+          const data = docSnap.data();
+          console.log("Current confession data:", data);
+          const voters = data.voters || [];
+          if (voters.includes(userId)) {
+            throw new Error("You already voted for this confession!");
+          }
+          transaction.update(confessionRef, {
+            votes: (data.votes || 0) + 1,
+            voters: [...voters, userId]
+          });
+        });
+        console.log("Vote added successfully for user:", userId);
+      } catch (error) {
+        console.error("Error voting:", error.code, error.message);
+        showNotification(error.message || "Failed to upvote. Please try again.");
+      }
+    }
+    window.upvote = upvote;
+
+    document.getElementById('confession-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log("Submit confession triggered");
+      const text = document.getElementById('confession-text').value.trim();
+      const userId = localStorage.getItem('authUserId') || getUserId();
+      if (text.length === 0) {
+        showNotification('Please enter a confession.');
+        console.log("Submission failed: Empty text");
+        return;
+      }
+      if (text.length > 500) {
+        showNotification('Confession exceeds 500 character limit!');
+        console.log("Submission failed: Text too long");
+        return;
+      }
+      try {
+        console.log("Attempting to submit confession:", text);
+        await addDoc(collection(db, "confessions"), {
+          text: text,
+          votes: 0,
+          voters: [],
+          submitter: userId,
+          createdAt: serverTimestamp()
+        });
+        console.log("Confession submitted successfully");
+        document.getElementById('confession-text').value = '';
+        document.getElementById('char-count').textContent = '0/500 characters';
+        showNotification('Confession submitted successfully!');
+        document.getElementById('confession-popup').style.display = 'none';
+      } catch (error) {
+        console.error('Error submitting confession:', error.code, error.message);
+        showNotification(`Error submitting confession: ${error.message}`);
+      }
+    });
+
+    document.getElementById('confession-text').addEventListener('input', (e) => {
+      document.getElementById('char-count').textContent = `${e.target.value.length}/500 characters`;
+    });
+
+    const confessionPopup = document.getElementById('confession-popup');
+    const confessionsListPopup = document.getElementById('confessions-list-popup');
+
+    confessionPopup.addEventListener('click', (e) => {
+      if (e.target === confessionPopup) {
+        confessionPopup.style.display = 'none';
+      }
+    });
+
+    confessionsListPopup.addEventListener('click', (e) => {
+      if (e.target === confessionsListPopup) {
+        confessionsListPopup.style.display = 'none';
+        stopConfessionsListener();
+      }
+    });
+
+    document.getElementById('view-confessions-btn').addEventListener('click', () => {
+      confessionsListPopup.style.display = 'flex';
+      confessionPopup.style.display = 'none';
+      startConfessionsListener();
+    });
+
+    document.getElementById('back-to-form-btn').addEventListener('click', () => {
+      confessionsListPopup.style.display = 'none';
+      confessionPopup.style.display = 'flex';
+      stopConfessionsListener();
+    });
+
+    const customSelect = document.querySelector('.custom-select');
+    const selectButton = customSelect.querySelector('.select-button');
+    const options = customSelect.querySelector('.options');
+
+    selectButton.addEventListener('click', () => {
+      customSelect.classList.toggle('open');
+    });
+
+    options.querySelectorAll('div').forEach(option => {
+      option.addEventListener('click', () => {
+        selectButton.textContent = option.textContent;
+        customSelect.dataset.value = option.dataset.value;
+        customSelect.classList.remove('open');
+        window.updateConfessionsSort(customSelect.dataset.value);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!customSelect.contains(e.target)) {
+        customSelect.classList.remove('open');
+      }
+    });
+
+    (function () {
+      const fileInput = document.getElementById('mg-file');
+      const dropZone = document.getElementById('mg-drop');
+      const canvas = document.getElementById('mg-canvas');
+      const ctx = canvas.getContext('2d');
+      let img = null;
+
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+      const toast = (msg) => {
+        const t = document.getElementById('mg-toast');
+        t.textContent = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 2400);
+      };
+
+      function draw() {
+        ctx.clearRect(0, 0, W(), H());
+        if (!img) return;
+        ctx.drawImage(img, 0, 0, W(), H());
+
+        const colour = document.querySelector('input[name="wm-colour"]:checked').value;
+        const posX = +document.getElementById('mg-pos-x').value / 100;
+        const posY = +document.getElementById('mg-pos-y').value / 100;
+        const scaleP = +document.getElementById('mg-size').value / 100;
+
+        const fontSize = Math.floor(W() / 6 * scaleP);
+        ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = Math.max(6 * scaleP, 2);
+
+        const x = W() * posX;
+        const y = H() * posY;
+
+        ctx.fillStyle = colour;
+        ctx.strokeStyle = colour === 'white' ? 'black' : 'white';
+        ctx.strokeText('$ADHD', x, y);
+        ctx.fillText('$ADHD', x, y);
+      }
+
+      function handleFile(file) {
+        if (!file.type.startsWith('image/')) return toast('Unsupported file type');
+        if (file.size > 5*1024*1024) return toast('File > 5 MB');
+        const image = new Image();
+        image.onload = () => {
+          img = image;
+          canvas.width = image.width;
+          canvas.height = image.height;
+          draw();
+        };
+        image.src = URL.createObjectURL(file);
+      }
+
+      fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+      ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      }));
+      dropZone.addEventListener('drop', e => {
+        handleFile(e.dataTransfer.files[0]);
+      });
+
+      ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size'].forEach(id => {
+        const el = id.startsWith('wm') ? document.querySelectorAll('input[name="wm-colour"]') : [document.getElementById(id)];
+        el.forEach(inpt => inpt.addEventListener('input', () => {
+          if (id === 'mg-pos-x') document.getElementById('mg-pos-x-val').textContent = inpt.value;
+          if (id === 'mg-pos-y') document.getElementById('mg-pos-y-val').textContent = inpt.value;
+          if (id === 'mg-size') document.getElementById('mg-size-val').textContent = inpt.value;
+          draw();
+        }));
+      });
+
+      document.getElementById('mg-download').addEventListener('click', () => {
+        if (!img) return toast('Upload an image first');
+        if (!document.getElementById('mg-confirm').checked) return toast('Confirm image rights');
+        const fmt = document.getElementById('mg-format').value;
+        const link = document.createElement('a');
+        link.download = `adhd-meme.${fmt}`;
+        link.href = canvas.toDataURL(`image/${fmt}`);
+        link.click();
+      });
+
+      document.getElementById('mg-share').addEventListener('click', () => {
+  if (!img) return toast('Create a meme first');
+  if (!document.getElementById('mg-confirm').checked)
+    return toast('Confirm image rights');
+
+  const memeLink = '[replace this with the image from your downloads, you wonderful, hyper-active degen]';
+  const tweet = `Got distracted & made this!\n\nCheck it out: ${memeLink} \n\nhttps://adhdegens.fun/ $ADHD`;
+  const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+  window.open(intent, '_blank');
+});
+
+    })();
+  </script>
 </body>
 </html>
