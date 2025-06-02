@@ -452,6 +452,55 @@
       opacity: 1;
     }
 
+    .airdrop-popup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      max-width: 300px;
+      background: rgba(29, 185, 84, 0.95);
+      color: #000;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: 'Poppins', sans-serif;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      animation: fadeSlideIn 0.8s ease forwards;
+    }
+
+    .airdrop-popup button {
+      background: none;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .airdrop-popup {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        font-size: 0.85rem;
+      }
+    }
+
     button:focus, a:focus, input:focus, textarea:focus {
       outline: 2px solid #1DB954;
       outline-offset: 2px;
@@ -579,10 +628,20 @@
 <body>
   <div id="notification-popup" class="notification-popup"></div>
 
+  <div id="adhd-airdrop-popup" class="airdrop-popup">
+    <p><strong>Submit an ADHD confession</strong> for a chance to be airdropped <strong>300,000 $ADHD!</strong></p>
+    <button id="close-airdrop-popup">✖</button>
+  </div>
+
   <div id="confession-popup" class="confession-popup">
     <div class="confession-content">
       <h2>Share Anonymous $ADHD Confession</h2>
-      <p>Drop your wildest $ADHD moment (max 500 characters)</p>
+      <p style="font-size: 0.95rem; color: #ccc; line-height: 1.6; margin-bottom: 1.5rem;">
+  <strong style="color: #1DB954; font-size: 1.05rem;">🏆 WIN 300,000 $ADHD</strong><br><br>
+  Submit your ADHD confession or story, <strong>share it to X</strong>, and in 48 hours the <strong>top voted post</strong> gets 
+  <strong style="color: #1DB954;">300,000 $ADHD</strong> airdropped.<br><br>
+  Help spread awareness and connect through <strong>relatable confessions and stories</strong>!
+</p>
       <form id="confession-form">
         <textarea id="confession-text" placeholder="Your $ADHD confession..." maxlength="500" required></textarea>
         <div id="char-count">0/500 characters</div>
@@ -639,18 +698,17 @@
     </footer>
   </header>
 
-<div class="gallery">
-  <img src="img11.png" alt="ADHD Meme 1" loading="lazy" />
-  <img src="img2.png" alt="ADHD Meme 2" loading="lazy" />
-  <img src="img3.png" alt="ADHD Meme 3" loading="lazy" />
-  <img src="img4.png" alt="ADHD Meme 4" loading="lazy" />
-  <img src="img5.png" alt="ADHD Meme 5" loading="lazy" />
-  <img src="img6.png" alt="ADHD Meme 6" loading="lazy" />
-  <img src="img8.png" alt="ADHD Meme 8" loading="lazy" />
-  <img src="img9.png" alt="ADHD Meme 9" loading="lazy" />
-  <img src="img10.png" alt="ADHD Meme 10" loading="lazy" />
-</div>
-
+  <div class="gallery">
+    <img src="img11.png" alt="ADHD Meme 1" loading="lazy" />
+    <img src="img2.png" alt="ADHD Meme 2" loading="lazy" />
+    <img src="img3.png" alt="ADHD Meme 3" loading="lazy" />
+    <img src="img4.png" alt="ADHD Meme 4" loading="lazy" />
+    <img src="img5.png" alt="ADHD Meme 5" loading="lazy" />
+    <img src="img6.png" alt="ADHD Meme 6" loading="lazy" />
+    <img src="img8.png" alt="ADHD Meme 8" loading="lazy" />
+    <img src="img9.png" alt="ADHD Meme 9" loading="lazy" />
+    <img src="img10.png" alt="ADHD Meme 10" loading="lazy" />
+  </div>
 
   <section id="confessions" class="confessions-container">
     <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">$ADHD Confessions</h2>
@@ -889,108 +947,6 @@
     </div>
 
     <div id="mg-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:.6rem 1.2rem;border-radius:8px;color:#fff;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .35s;"></div>
-
-    <script>
-      (function () {
-        const fileInput = document.getElementById('mg-file');
-        const dropZone  = document.getElementById('mg-drop');
-        const canvas    = document.getElementById('mg-canvas');
-        const ctx       = canvas.getContext('2d');
-        let img = null;
-
-        const W = () => canvas.width;
-        const H = () => canvas.height;
-        const toast = (msg) => {
-          const t = document.getElementById('mg-toast');
-          t.textContent = msg; t.style.opacity = 1;
-          setTimeout(() => t.style.opacity = 0, 2400);
-        };
-
-        function draw() {
-          ctx.clearRect(0, 0, W(), H());
-          if (!img) return;
-          ctx.drawImage(img, 0, 0, W(), H());
-
-          const colour = document.querySelector('input[name="wm-colour"]:checked').value;
-          const posX = +document.getElementById('mg-pos-x').value / 100;
-          const posY = +document.getElementById('mg-pos-y').value / 100;
-          const scaleP = +document.getElementById('mg-size').value / 100;
-
-          const fontSize = Math.floor(W() / 6 * scaleP);
-          ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.lineWidth = Math.max(6 * scaleP, 2);
-
-          const x = W() * posX;
-          const y = H() * posY;
-
-          ctx.fillStyle = colour;
-          ctx.strokeStyle = colour === 'white' ? 'black' : 'white';
-          ctx.strokeText('$ADHD', x, y);
-          ctx.fillText('$ADHD', x, y);
-        }
-
-        function handleFile(file) {
-          if (!file.type.startsWith('image/')) return toast('Unsupported file type');
-          if (file.size > 5*1024*1024)  return toast('File > 5 MB');
-          const image = new Image();
-          image.onload = () => {
-            img = image;
-            canvas.width = image.width;
-            canvas.height = image.height;
-            draw();
-          };
-          image.src = URL.createObjectURL(file);
-        }
-
-        fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-        ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
-          e.preventDefault();
-          dropZone.classList.add('dragover');
-        }));
-        ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => {
-          e.preventDefault();
-          dropZone.classList.remove('dragover');
-        }));
-        dropZone.addEventListener('drop', e => {
-          handleFile(e.dataTransfer.files[0]);
-        });
-
-        ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size'].forEach(id => {
-          const el = id.startsWith('wm') ? document.querySelectorAll('input[name="wm-colour"]') : [document.getElementById(id)];
-          el.forEach(inpt => inpt.addEventListener('input', () => {
-            if (id === 'mg-pos-x') document.getElementById('mg-pos-x-val').textContent = inpt.value;
-            if (id === 'mg-pos-y') document.getElementById('mg-pos-y-val').textContent = inpt.value;
-            if (id === 'mg-size')  document.getElementById('mg-size-val').textContent = inpt.value;
-            draw();
-          }));
-        });
-
-        document.getElementById('mg-download').addEventListener('click', () => {
-          if (!img) return toast('Upload an image first');
-          if (!document.getElementById('mg-confirm').checked) return toast('Confirm image rights');
-          const fmt = document.getElementById('mg-format').value;
-          const link = document.createElement('a');
-          link.download = `adhd-meme.${fmt}`;
-          link.href = canvas.toDataURL(`image/${fmt}`);
-          link.click();
-        });
-
-        document.getElementById('mg-share').addEventListener('click', () => {
-          if (!img) return toast('Create a meme first');
-          if (!document.getElementById('mg-confirm').checked)
-            return toast('Confirm image rights');
-
-          const memeLink = '[add download link]';
-          const tweet =
-            `Got distracted & made my own ADHD meme! Check it out: ${memeLink} $ADHD` +
-            `\n\nhttps://adhdegens.fun/`;
-          const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
-          window.open(intent, '_blank');
-        });
-      })();
-    </script>
   </section>
 
   <img src="adhdimage1.png" alt="Decorative ADHD-themed illustration" class="corner-img" />
@@ -1043,6 +999,21 @@
         notification.classList.remove('notification-visible');
       }, 3000);
     }
+
+    window.addEventListener('load', () => {
+      const popup = document.getElementById('adhd-airdrop-popup');
+      const closeBtn = document.getElementById('close-airdrop-popup');
+
+      // Auto-close after 15 seconds
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 10000);
+
+      // Manual close
+      closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+      });
+    });
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
@@ -1101,15 +1072,15 @@
     window.copyADHD = copyADHD;
 
     function shareOnX(text, event) {
-      event.stopPropagation();
-      const truncated = text.length > 200 ? text.slice(0, 197) + '…' : text;
-      const tweet =
-        `${truncated}\n\nShare your ADHD confession at https://adhdegens.fun $ADHD`;
-      window.open(
-        `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
-        '_blank'
-      );
-    }
+  event.stopPropagation();
+  const truncated = text.length > 200 ? text.slice(0, 197) + '…' : text;
+  const tweet = `${truncated}\n\nShare your ADHD stories too at https://adhdegens.fun\n\n@degen_adhd $ADHD`;
+  window.open(
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
+    '_blank'
+  );
+}
+
     window.shareOnX = shareOnX;
 
     function startConfessionsListener() {
@@ -1317,6 +1288,105 @@
         customSelect.classList.remove('open');
       }
     });
+
+    (function () {
+      const fileInput = document.getElementById('mg-file');
+      const dropZone = document.getElementById('mg-drop');
+      const canvas = document.getElementById('mg-canvas');
+      const ctx = canvas.getContext('2d');
+      let img = null;
+
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+      const toast = (msg) => {
+        const t = document.getElementById('mg-toast');
+        t.textContent = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 2400);
+      };
+
+      function draw() {
+        ctx.clearRect(0, 0, W(), H());
+        if (!img) return;
+        ctx.drawImage(img, 0, 0, W(), H());
+
+        const colour = document.querySelector('input[name="wm-colour"]:checked').value;
+        const posX = +document.getElementById('mg-pos-x').value / 100;
+        const posY = +document.getElementById('mg-pos-y').value / 100;
+        const scaleP = +document.getElementById('mg-size').value / 100;
+
+        const fontSize = Math.floor(W() / 6 * scaleP);
+        ctx.font = `bold ${fontSize}px Impact, Arial Black, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = Math.max(6 * scaleP, 2);
+
+        const x = W() * posX;
+        const y = H() * posY;
+
+        ctx.fillStyle = colour;
+        ctx.strokeStyle = colour === 'white' ? 'black' : 'white';
+        ctx.strokeText('$ADHD', x, y);
+        ctx.fillText('$ADHD', x, y);
+      }
+
+      function handleFile(file) {
+        if (!file.type.startsWith('image/')) return toast('Unsupported file type');
+        if (file.size > 5*1024*1024) return toast('File > 5 MB');
+        const image = new Image();
+        image.onload = () => {
+          img = image;
+          canvas.width = image.width;
+          canvas.height = image.height;
+          draw();
+        };
+        image.src = URL.createObjectURL(file);
+      }
+
+      fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+      ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      }));
+      dropZone.addEventListener('drop', e => {
+        handleFile(e.dataTransfer.files[0]);
+      });
+
+      ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size'].forEach(id => {
+        const el = id.startsWith('wm') ? document.querySelectorAll('input[name="wm-colour"]') : [document.getElementById(id)];
+        el.forEach(inpt => inpt.addEventListener('input', () => {
+          if (id === 'mg-pos-x') document.getElementById('mg-pos-x-val').textContent = inpt.value;
+          if (id === 'mg-pos-y') document.getElementById('mg-pos-y-val').textContent = inpt.value;
+          if (id === 'mg-size') document.getElementById('mg-size-val').textContent = inpt.value;
+          draw();
+        }));
+      });
+
+      document.getElementById('mg-download').addEventListener('click', () => {
+        if (!img) return toast('Upload an image first');
+        if (!document.getElementById('mg-confirm').checked) return toast('Confirm image rights');
+        const fmt = document.getElementById('mg-format').value;
+        const link = document.createElement('a');
+        link.download = `adhd-meme.${fmt}`;
+        link.href = canvas.toDataURL(`image/${fmt}`);
+        link.click();
+      });
+
+      document.getElementById('mg-share').addEventListener('click', () => {
+        if (!img) return toast('Create a meme first');
+        if (!document.getElementById('mg-confirm').checked)
+          return toast('Confirm image rights');
+
+        const memeLink = '[add download link]';
+        const tweet = `Got distracted & made my own ADHD meme! Check it out: ${memeLink} $ADHD +\n\nhttps://adhdegens.fun/`;
+        const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+        window.open(intent, '_blank');
+      });
+    })();
   </script>
 </body>
 </html>
