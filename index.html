@@ -1377,15 +1377,16 @@
       });
 
       document.getElementById('mg-share').addEventListener('click', () => {
-        if (!img) return toast('Create a meme first');
-        if (!document.getElementById('mg-confirm').checked)
-          return toast('Confirm image rights');
+  if (!img) return toast('Create a meme first');
+  if (!document.getElementById('mg-confirm').checked)
+    return toast('Confirm image rights');
 
-        const memeLink = '[add download link]';
-        const tweet = `Got distracted & made my own ADHD meme! Check it out: ${memeLink} $ADHD +\n\nhttps://adhdegens.fun/`;
-        const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
-        window.open(intent, '_blank');
-      });
+  const memeLink = '[replace this with an image from your downloads, you wonderful, hyper-active degen]';
+  const tweet = `Got distracted & made this!\n\nCheck it out: ${memeLink} \n\nhttps://adhdegens.fun/ $ADHD`;
+  const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+  window.open(intent, '_blank');
+});
+
     })();
   </script>
 </body>
