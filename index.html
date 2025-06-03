@@ -841,6 +841,11 @@
         </fieldset>
 
         <fieldset>
+          <legend>2.5 · Custom Text</legend>
+          <input type="text" id="mg-custom-text" placeholder="Type your meme text..." value="$ADHD" maxlength="125" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #1DB954; background: rgba(255,255,255,0.05); color: #fff; font-family: 'Poppins', sans-serif; font-size: 0.95rem;" />
+        </fieldset>
+
+        <fieldset>
           <legend>3 · Position (%)</legend>
           <div class="mg-slider"><input type="range" id="mg-pos-x" min="0" max="100" value="50"/><span id="mg-pos-x-val">50</span></div>
           <div class="mg-slider"><input type="range" id="mg-pos-y" min="0" max="100" value="50"/><span id="mg-pos-y-val">50</span></div>
@@ -916,7 +921,46 @@
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
 
+    // Telegram Bot Token and Chat ID
+    const TELEGRAM_BOT_TOKEN = "8122510011:AAG5c8u8Jrpu2FFBNid7k63fsC_gGu4PzyM"; // Replace with new token after revoking
+    const TELEGRAM_CHAT_ID = "-1002629941865"; // Replace with your channel/group chat ID (e.g., "@YourADHDChannel" or "-1001234567890")
+
     let unsubscribeConfessions = null;
+
+    // Function to post confession to Telegram
+    async function postToTelegram(confessionText, createdAt) {
+      const message = `
+🌟 New $ADHD Confession 🌟
+"${confessionText}"
+Posted: ${createdAt}
+Join the fun at https://adhdegens.fun! 🚀
+Share on X: https://twitter.com/intent/tweet?text=${encodeURIComponent(confessionText + "\n\nShare your ADHD stories too at https://adhdegens.fun\n\n@degen_adhd $ADHD")}
+#ADHD #Confession
+      `;
+
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          throw new Error(data.description || "Failed to post to Telegram");
+        }
+        console.log("Confession posted to Telegram:", confessionText);
+      } catch (error) {
+        console.error("Error posting to Telegram:", error.message);
+        showNotification("Failed to post confession to Telegram.");
+      }
+    }
 
     function showNotification(message) {
       const notification = document.getElementById('notification-popup');
@@ -1078,23 +1122,40 @@
       div.className = `confession-item${rank ? ` rank-${rank}` : ''}`;
       if (rank) div.setAttribute('data-rank', `#${rank}`);
       
- // Sanitize confession text for data attribute
-const safeText = confession.text
-  .replace(/"/g, '"') // Escape double quotes
-  .replace(/'/g, '\'') // Escape single quotes
+function renderConfession(confession, rank, container, userId) {
+  const hasVoted = confession.voters && confession.voters.includes(userId);
+  const div = document.createElement('div');
+  div.className = `confession-item${rank ? ` rank-${rank}` : ''}`;
+  if (rank) div.setAttribute('data-rank', `#${rank}`);
+  
+  // Sanitize confession text for data attribute
+  const safeText = confession.text
+    .replace(/"/g, '&quot;') // Escape double quotes
+    .replace(/'/g, '&apos;') // Escape single quotes
+    .replace(/</g, '&lt;')   // Escape less-than (prevents HTML injection)
+    .replace(/>/g, '&gt;');  // Escape greater-than
 
-div.innerHTML = `
-  <p>${confession.text}</p>
-  <div class="confession-votes">
-    <button onclick="window.upvote('${confession.id}', event)" ${hasVoted ? 'disabled' : ''}>
-      ${hasVoted ? 'Voted' : 'Upvote'} (${confession.votes || 0})
+  div.innerHTML = `
+    <p>${confession.text}</p>
+    <div class="confession-votes">
+      <button onclick="window.upvote('${confession.id}', event)" ${hasVoted ? 'disabled' : ''}>
+        ${hasVoted ? 'Voted' : 'Upvote'} (${confession.votes || 0})
+      </button>
+    </div>
+    <p class="confession-meta">Posted: ${confession.createdAt ? new Date(confession.createdAt.toDate()).toLocaleString() : 'Just now'}</p>
+    <button class="share-btn" data-text="${safeText}">
+      <img src="xlogo.png" alt="X">
     </button>
-  </div>
-  <p class="confession-meta">Posted: ${confession.createdAt ? new Date(confession.createdAt.toDate()).toLocaleString() : 'Just now'}</p>
-  <button class="share-btn" data-text="${safeText}">
-    <img src="xlogo.png" alt="X">
-  </button>
-`;
+  `;
+
+  // Add event listener for share button
+  const shareBtn = div.querySelector('.share-btn');
+  shareBtn.addEventListener('click', function (e) {
+    window.shareOnX(this.dataset.text, e);
+  });
+
+  container.appendChild(div);
+}
 
       // Add event listener for share button
       const shareBtn = div.querySelector('.share-btn');
@@ -1152,17 +1213,22 @@ div.innerHTML = `
       }
       try {
         console.log("Attempting to submit confession:", text);
-        await addDoc(collection(db, "confessions"), {
+        const docRef = await addDoc(collection(db, "confessions"), {
           text: text,
           votes: 0,
           voters: [],
           submitter: userId,
           createdAt: serverTimestamp()
         });
-        console.log("Confession submitted successfully");
+        console.log("Confession submitted successfully, ID:", docRef.id);
         document.getElementById('confession-text').value = '';
         document.getElementById('char-count').textContent = '0/500 characters';
         showNotification('Confession submitted successfully!');
+
+        // Post to Telegram
+        const createdAt = new Date().toLocaleString(); // Fallback for immediate display
+        await postToTelegram(text, createdAt);
+
         document.getElementById('confession-popup').style.display = 'none';
       } catch (error) {
         console.error('Error submitting confession:', error.code, error.message);
@@ -1290,7 +1356,9 @@ div.innerHTML = `
         const posX = +document.getElementById('mg-pos-x').value / 100;
         const posY = +document.getElementById('mg-pos-y').value / 100;
         const scaleP = +document.getElementById('mg-size').value / 100;
+        const customText = document.getElementById('mg-custom-text').value.trim() || '$ADHD';
 
+        console.log('Custom text:', customText);
         console.log('Position:', { x: posX, y: posY }, 'Scale:', scaleP);
 
         const fontSize = Math.floor(W() / 6 * scaleP);
@@ -1304,7 +1372,7 @@ div.innerHTML = `
         ctx.fillStyle = colour;
         ctx.strokeStyle = colour === 'white' ? 'black' : 'white';
 
-        wrapText(ctx, '$ADHD', W() * posX, H() * posY, maxWidth, lineHeight);
+        wrapText(ctx, customText.toUpperCase(), W() * posX, H() * posY, maxWidth, lineHeight);
       }
 
       function handleFile(file) {
@@ -1340,7 +1408,7 @@ div.innerHTML = `
         handleFile(e.dataTransfer.files[0]);
       });
 
-      ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size'].forEach(id => {
+      ['wm-colour', 'mg-pos-x', 'mg-pos-y', 'mg-size', 'mg-custom-text'].forEach(id => {
         const el = id.startsWith('wm') ? document.querySelectorAll('input[name="wm-colour"]') : [document.getElementById(id)];
         el.forEach(inpt => inpt.addEventListener('input', () => {
           if (id === 'mg-pos-x') document.getElementById('mg-pos-x-val').textContent = inpt.value;
